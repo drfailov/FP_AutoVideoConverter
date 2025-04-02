@@ -215,7 +215,6 @@ namespace FP_Auto_Video_Converter_2
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
-
                 if (workingThread != null)
                 {
                     log("Зараз не вийде дропнути файли оскільки триває інша робота.");
@@ -1346,7 +1345,7 @@ namespace FP_Auto_Video_Converter_2
 2.2
 - Не пропускати в лог спецсимволи
 - Оновив кольори статусів
-- 
+- Захист від дропа файлів під час обробки
 - 
 - 
 - 
