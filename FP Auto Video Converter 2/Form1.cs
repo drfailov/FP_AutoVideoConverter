@@ -6,6 +6,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
@@ -40,6 +41,13 @@ namespace FP_Auto_Video_Converter_2
         int logLineLength = 160;
         private string lastLog = "";
         private int lastLogCount = 0;
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern uint SetThreadExecutionState(uint esFlags);
+
+        private const uint ES_CONTINUOUS = 0x80000000;
+        private const uint ES_SYSTEM_REQUIRED = 0x00000001;
+        private const uint ES_DISPLAY_REQUIRED = 0x00000002;
 
 
         public Form1()
@@ -114,11 +122,13 @@ namespace FP_Auto_Video_Converter_2
             Directory.CreateDirectory(recycledir);
             updateStats();
 
+            // Запобігаємо переходу в режим сну
+            SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED);
+            log("Комп’ютер не перейде в режим сну, поки працює ця програма.");
+
             processArgumentsOnLoad();
 
-            //якщо додались якісь файли - почати аналіз формату
-            //if (dataGridView1.Rows.Count > 1)
-            //    startDetectingFormat();
+            
         }
 
         void processArgumentsOnLoad()
@@ -1343,6 +1353,9 @@ namespace FP_Auto_Video_Converter_2
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
+            // Повертаємо систему в нормальний режим
+            SetThreadExecutionState(ES_CONTINUOUS);
+
             //видаляти tmp файл
             if (File.Exists(tmpfile))
                 File.Delete(tmpfile);
