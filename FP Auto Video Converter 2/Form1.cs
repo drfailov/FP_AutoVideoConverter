@@ -1384,6 +1384,52 @@ namespace FP_Auto_Video_Converter_2
             // Виведення опису через MessageBox
             MessageBox.Show(description, "Про програму", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
+
+        private void dataGridView1_SortCompare(object sender, DataGridViewSortCompareEventArgs e)
+        {
+            try
+            {
+                object value1object = e.CellValue1;
+                object value2object = e.CellValue2;
+                if (value1object == null || value2object == null)
+                    return;
+                string value1String = value1object.ToString();
+                string value2String = value2object.ToString();
+                if (value1String.Trim().Equals("") || value2String.Trim().Equals(""))
+                    return;
+                if (e.Column.Name.Equals("ColumnFileNewSize"))
+                {
+                    long value1 = ConvertToBytes(value1String);
+                    long value2 = ConvertToBytes(value2String);
+                    if (value1 < value2) e.SortResult = -1; // Якщо перше значення менше
+                    else if (value1 > value2) e.SortResult = 1;  // Якщо перше значення більше
+                    else e.SortResult = 0;  // Якщо рівні
+                    e.Handled = true; // Уникаємо стандартного сортування
+                }
+                if (e.Column.Name.Equals("ColumnFileSize"))
+                {
+                    long value1 = ConvertToBytes(value1String);
+                    long value2 = ConvertToBytes(value2String);
+                    if (value1 < value2) e.SortResult = -1; // Якщо перше значення менше
+                    else if (value1 > value2) e.SortResult = 1;  // Якщо перше значення більше
+                    else e.SortResult = 0;  // Якщо рівні
+                    e.Handled = true; // Уникаємо стандартного сортування
+                }
+                if (e.Column.Name.Equals("ColumnFileBitRate")) 
+                {
+                    double value1 = double.Parse(value1String.Replace(" МБіт", ""));
+                    double value2 = double.Parse(value2String.Replace(" МБіт", ""));
+                    if (value1 < value2) e.SortResult = -1; // Якщо перше значення менше
+                    else if (value1 > value2) e.SortResult = 1;  // Якщо перше значення більше
+                    else e.SortResult = 0;  // Якщо рівні
+                    e.Handled = true; // Уникаємо стандартного сортування
+                }
+            }
+            catch (Exception ex)
+            {
+                log(ex.ToString());
+            }
+        }
     }
 }
 
@@ -1398,7 +1444,7 @@ namespace FP_Auto_Video_Converter_2
 - Не пропускати в лог спецсимволи
 - Оновив кольори статусів
 - Захист від дропа файлів під час обробки
-- 
+- Додавання файлів з дропа та з аргументів відбувається в фоновому потоці завдяки чому програма не зависає якщо файлів багато
 - 
 - 
 - 
