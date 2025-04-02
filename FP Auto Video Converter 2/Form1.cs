@@ -215,14 +215,25 @@ namespace FP_Auto_Video_Converter_2
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
+
+                if (workingThread != null)
+                {
+                    log("Зараз не вийде дропнути файли оскільки триває інша робота.");
+                    return;
+                }
                 log("Дропай!");
                 e.Effect = DragDropEffects.Copy;
             }
         }
         private void Form1_DragDrop(object sender, DragEventArgs e)
         {
+            if (workingThread != null)
+            {
+                log("Файли не було прийнято оскільки триває інша робота.");
+                return;
+            }
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            log("Такс такс так, що тут у нас...");
+            log("Починаю додавати файли до списку...");
             foreach (string file in files)
             {
                 addFileToList(file);
@@ -434,27 +445,34 @@ namespace FP_Auto_Video_Converter_2
         }
         void updateFormatInDataGrid(int index, string format, string bitrate, string resolution)
         {
-            if (dataGridView1.InvokeRequired)
+            try
             {
-                dataGridView1.Invoke(new Action(() =>
+                if (dataGridView1.InvokeRequired)
                 {
-                    updateFormatInDataGrid(index, format, bitrate, resolution);
-                }));
-                return;
-            }
-            if(format.Equals("AVC"))
-                dataGridView1.Rows[index].Cells["ColumnFileFormat"].Value = FORMAT_AVC;
-            else if (format.Equals("HEVC"))
-                dataGridView1.Rows[index].Cells["ColumnFileFormat"].Value = FORMAT_HEVC;
-            else
-                dataGridView1.Rows[index].Cells["ColumnFileFormat"].Value = format;
-            dataGridView1.Rows[index].Cells["ColumnFileBitrate"].Value = bitrate;
-            dataGridView1.Rows[index].Cells["ColumnFileResolution"].Value = resolution;
+                    dataGridView1.Invoke(new Action(() =>
+                    {
+                        updateFormatInDataGrid(index, format, bitrate, resolution);
+                    }));
+                    return;
+                }
+                if (format.Equals("AVC"))
+                    dataGridView1.Rows[index].Cells["ColumnFileFormat"].Value = FORMAT_AVC;
+                else if (format.Equals("HEVC"))
+                    dataGridView1.Rows[index].Cells["ColumnFileFormat"].Value = FORMAT_HEVC;
+                else
+                    dataGridView1.Rows[index].Cells["ColumnFileFormat"].Value = format;
+                dataGridView1.Rows[index].Cells["ColumnFileBitrate"].Value = bitrate;
+                dataGridView1.Rows[index].Cells["ColumnFileResolution"].Value = resolution;
 
-            if (index == dataGridView1.Rows.Count - 2)
-                dataGridView1.FirstDisplayedScrollingRowIndex = 0;
-            else if (dataGridView1.FirstDisplayedScrollingRowIndex < index - 22)
-                dataGridView1.FirstDisplayedScrollingRowIndex = index;
+                if (index == dataGridView1.Rows.Count - 2)
+                    dataGridView1.FirstDisplayedScrollingRowIndex = 0;
+                else if (dataGridView1.FirstDisplayedScrollingRowIndex < index - 22)
+                    dataGridView1.FirstDisplayedScrollingRowIndex = index;
+            }
+            catch (Exception ex)
+            {
+                log(ex.ToString());
+            }
         }
         void updateStats()
         {
@@ -949,20 +967,27 @@ namespace FP_Auto_Video_Converter_2
 
         void updateStatusInDataGrid(int index, string status, Color color, String tooltip)
         {
-            if (dataGridView1.InvokeRequired)
+            try
             {
-                dataGridView1.Invoke(new Action(() =>
+                if (dataGridView1.InvokeRequired)
                 {
-                    updateStatusInDataGrid(index, status, color, tooltip);
-                }));
-                return;
-            }
-            dataGridView1.Rows[index].Cells["ColumnFileStatus"].Value = status;
-            dataGridView1.Rows[index].Cells["ColumnFileStatus"].Style.BackColor = color;
-            dataGridView1.Rows[index].Cells["ColumnFileStatus"].ToolTipText = tooltip;
+                    dataGridView1.Invoke(new Action(() =>
+                    {
+                        updateStatusInDataGrid(index, status, color, tooltip);
+                    }));
+                    return;
+                }
+                dataGridView1.Rows[index].Cells["ColumnFileStatus"].Value = status;
+                dataGridView1.Rows[index].Cells["ColumnFileStatus"].Style.BackColor = color;
+                dataGridView1.Rows[index].Cells["ColumnFileStatus"].ToolTipText = tooltip;
 
-            if (dataGridView1.FirstDisplayedScrollingRowIndex < index - 22)
-                dataGridView1.FirstDisplayedScrollingRowIndex = index;
+                if (dataGridView1.FirstDisplayedScrollingRowIndex < index - 22)
+                    dataGridView1.FirstDisplayedScrollingRowIndex = index;
+            }
+            catch(Exception ex)
+            {
+                log(ex.ToString());
+            }
         }
 
         void updateNewSizeInDataGrid(int index, string newSize, string percent)
@@ -1320,7 +1345,7 @@ namespace FP_Auto_Video_Converter_2
 
 2.2
 - Не пропускати в лог спецсимволи
-- 
+- Оновив кольори статусів
 - 
 - 
 - 
