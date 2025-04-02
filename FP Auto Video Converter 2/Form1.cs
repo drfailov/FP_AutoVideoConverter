@@ -156,8 +156,8 @@ namespace FP_Auto_Video_Converter_2
                     "\n\n -clearLess2 - Очистити зі списку всі файли бітрейтом менше 2 мегабіт." +
                     "\n\n -clearLess4 - Очистити зі списку всі файли бітрейтом менше 4 мегабіт." +
                     "\n\n -clearH265 - Очистити зі списку всі файли що вже в кодеку H265 (HEVC)." +
-                    "\n\n -start - автоматичний запуск конвертації без втручання користувача." +
-                    "\n\n -exit - автоматично вийти коли завершиться конвертація." +
+                    "\n\n -start - автоматичний запуск стиснення без втручання користувача." +
+                    "\n\n -exit - автоматично вийти коли завершиться стиснення." +
                     "\n\n -----------------------------" +
                     "\n Аргументи чутливі до регістру." +
                     "\n Невалідні аргументи ігноруються." +
@@ -843,7 +843,7 @@ namespace FP_Auto_Video_Converter_2
                     return;
                 }    
 
-                log("Запуск конвертування...");
+                log("Запуск стиснення...");
                 stop = false;
                 buttonStop.Enabled = true;
                 stopwatch.Start();
@@ -880,14 +880,14 @@ namespace FP_Auto_Video_Converter_2
                     int height = int.Parse(resolutionParts[1]); // 1080
                     int rotation = int.Parse(resolutionParts[2]); // 0   90   180    270
                     float smallerSide = Math.Min(width, height);
-                    log($"Конвертація файлу: {fileName}");
+                    log($"Стиснення файлу: {fileName}");
                     try
                     {
-                        //Підготувати файл до конвертації
+                        //Підготувати файл до стиснення
                         File.Delete(tmpfile);
 
 
-                        //Конвертувати відео в тимчасовий файл
+                        //Стиснути відео в тимчасовий файл
                         double videoDuration = GetVideoDurationInSeconds(filePath);
                         string resolution = "";
                         if (downscale && smallerSide > targetSmallerSide)
@@ -941,7 +941,7 @@ namespace FP_Auto_Video_Converter_2
                         if (stop)
                         {
                             updateStats();
-                            string msg = $"Конвертація відмінена користувачем";
+                            string msg = $"Стиснення відмінено користувачем";
                             updateStatusInDataGrid(i, STATUS_WAITING, STATUS_WAITING_COLOR, msg);
                             log(msg);
                             continue;
@@ -968,13 +968,13 @@ namespace FP_Auto_Video_Converter_2
                         if(oldSize < newSize && skipBigger)
                         {
                             updateStats();
-                            string msg = $"Конвертація пропущена через те що новий файл більший ({FormatBytes(newSize)})";
+                            string msg = $"Стиснення пропущено через те що новий файл більший ({FormatBytes(newSize)})";
                             updateStatusInDataGrid(i, STATUS_SKIPPED, STATUS_SKIPPED_COLOR, msg);
                             log(msg);
                             continue;
                         }
 
-                        //Забекапити оригінальний файл і замінити на конвертований
+                        //Забекапити оригінальний файл і замінити на стиснений
                         DateTime creationTime = File.GetCreationTime(filePath); // Отримуємо дати з оригінального файлу
                         DateTime lastWriteTime = File.GetLastWriteTime(filePath);
                         DateTime lastAccessTime = File.GetLastAccessTime(filePath);
@@ -993,12 +993,12 @@ namespace FP_Auto_Video_Converter_2
                         updateStats();
                         updateStatusInDataGrid(i, STATUS_COMPLETED, STATUS_COMPLETED_COLOR, "");
                         updateNewSizeInDataGrid(i, FormatBytes(newSize), percent);
-                        log($"Конвертація завершена: {fileName}");
+                        log($"Стиснення завершено: {fileName}");
                     }
                     catch (Exception ex)
                     {
                         updateStats();
-                        string err = $"Помилка при конвертації файлу {fileName}: {ex.Message}";
+                        string err = $"Помилка при стисненні файлу {fileName}: {ex.Message}";
                         updateStatusInDataGrid(i, STATUS_ERROR, STATUS_ERROR_COLOR, err);
                         log(err);
                         log(ex.StackTrace);
@@ -1007,7 +1007,7 @@ namespace FP_Auto_Video_Converter_2
                         if (stop)
                         {
                             updateStats();
-                            string msg = $"Конвертація відмінена користувачем";
+                            string msg = $"Стиснення відмінено користувачем";
                             updateStatusInDataGrid(i, STATUS_WAITING, STATUS_WAITING_COLOR, msg);
                             log(msg);
                             continue;
@@ -1017,7 +1017,7 @@ namespace FP_Auto_Video_Converter_2
             }
             finally
             {
-                log("Конвертація завершена.");
+                log("Стиснення завершено.");
                 buttonsActive(true);
                 status("Готово.");
                 stopwatch.Stop();
@@ -1477,5 +1477,5 @@ namespace FP_Auto_Video_Converter_2
 - Переробив інтерфейс програми (сподіваюсь покращив)
 - Перенесення метаданих зі старого файла на новий
 - Доповнено опис програми
-- Запобігання вимкненню або сну компа поки відкрито конвертер
+- Запобігання вимкненню або сну компа поки відкрита програма
  */
