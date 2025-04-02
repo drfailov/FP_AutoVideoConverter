@@ -900,7 +900,9 @@ namespace FP_Auto_Video_Converter_2
                         while(File.Exists(backupPath))
                             backupPath += "1";
                         File.Move(filePath, backupPath);
-                        File.Move(tmpfile, filePath);
+                        //замінити розширення файла на .mp4 незалежно від того яке було
+                        string filePathMP4 = Path.ChangeExtension(filePath, ".mp4");
+                        File.Move(tmpfile, filePathMP4);
 
                         //Оновити дані в таблиці
                         updateStats();
@@ -1160,26 +1162,31 @@ namespace FP_Auto_Video_Converter_2
 
         private void dataGridView1_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex >= 0) // Перевірка, що клікнули на рядок, а не на заголовок
+            try
             {
-                string filePath = dataGridView1.Rows[e.RowIndex].Cells["ColumnFilePath"].Value?.ToString();
-
-                if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath))
+                if (e.RowIndex >= 0) // Перевірка, що клікнули на рядок, а не на заголовок
                 {
-                    try
+                    string filePath = dataGridView1.Rows[e.RowIndex].Cells["ColumnFilePath"].Value?.ToString();
+                    string filePathMP4 = Path.ChangeExtension(filePath, ".mp4");
+                    if (e.ColumnIndex == 1) //open folder
                     {
-                        //Process.Start(filePath);
-                        Process.Start("explorer.exe", $"/select,\"{filePath}\"");
+                        if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath))
+                            Process.Start("explorer.exe", $"/select,\"{filePath}\"");
+                        else if (!string.IsNullOrEmpty(filePathMP4) && File.Exists(filePathMP4))
+                            Process.Start("explorer.exe", $"/select,\"{filePathMP4}\"");
                     }
-                    catch (Exception ex)
+                    if (e.ColumnIndex == 0) //open file
                     {
-                        MessageBox.Show($"Не вдалося відкрити файл:\n{ex.Message}", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath))
+                            Process.Start(filePath);
+                        else if (!string.IsNullOrEmpty(filePathMP4) && File.Exists(filePathMP4))
+                            Process.Start("explorer.exe", $"/select,\"{filePathMP4}\"");
                     }
                 }
-                else
-                {
-                    MessageBox.Show("Файл не знайдено!", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Не вдалося відкрити файл:\n{ex.Message}", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -1251,6 +1258,10 @@ namespace FP_Auto_Video_Converter_2
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
+            //видаляти tmp файл
+            if (File.Exists(tmpfile))
+                File.Delete(tmpfile);
+
             // Створюємо шлях до каталогу Logs
             string logsDirectory = Path.Combine(Application.StartupPath, "Logs");
 
@@ -1297,3 +1308,11 @@ namespace FP_Auto_Video_Converter_2
         }
     }
 }
+
+
+/*
+ 2.1
+- видаляти tmp файл за собою
+- заміняти розширення з довільного на mp4 якщо було інше
+- дабл клік на комірку відкриє або файл або папку залежно куди клікнути
+ */
