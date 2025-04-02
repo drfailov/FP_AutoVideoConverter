@@ -297,6 +297,7 @@ namespace FP_Auto_Video_Converter_2
 
             try
             {
+                s = Regex.Replace(s, @"[^\p{L}\p{N}\p{P}\p{Z}]", ""); //фільтрувати недруковані символи
                 //richTextBox1.SelectionColor = Color.Black;
                 string prefix =  DateTime.Now.ToString() + ":     ";
                 int initialLength = richTextBox1.TextLength + prefix.Length;
@@ -1289,7 +1290,7 @@ namespace FP_Auto_Video_Converter_2
 
         private void buttonAbout_Click(object sender, EventArgs e)
         {
-            string description = "FP AutoVideoConverter 2.0" +
+            string description = "FP AutoVideoConverter 2.2" +
                 "\n" +
                 "\nЦя програма дозволяє автоматизувати процес стиснення відеофайлів," +
                 "\nнадаючи зручний інтерфейс для обробки декількох файлів одночасно." +
@@ -1315,4 +1316,14 @@ namespace FP_Auto_Video_Converter_2
 - видаляти tmp файл за собою
 - заміняти розширення з довільного на mp4 якщо було інше
 - дабл клік на комірку відкриє або файл або папку залежно куди клікнути
+
+2.2
+- Не пропускати в лог спецсимволи
+- 
+- 
+- 
+- 
+- 
+- 
+- 
  */
