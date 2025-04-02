@@ -605,7 +605,7 @@ namespace FP_Auto_Video_Converter_2
                     "Помилок:       " + errors + " шт (" + FormatBytes(bytesErrors) + ")\n" +
                     $"Готово:        {completed} шт ({FormatBytes(bytesCompleted)})\n" +
                     $"\n" +
-                    $"Конвертування: {roundedUptime:hh\\:mm\\:ss} (-{FormatBytes(bytesCompleted - bytesNewCompleted)})\n" +
+                    $"Стиснення:     {roundedUptime:hh\\:mm\\:ss} (-{FormatBytes(bytesCompleted - bytesNewCompleted)})\n" +
                     $"{FormatBytes(bytesCompleted)} -> {FormatBytes(bytesNewCompleted)}{percent}\n";
             }
             catch (Exception e)
@@ -965,6 +965,9 @@ namespace FP_Auto_Video_Converter_2
                         }
 
                         //Забекапити оригінальний файл і замінити на конвертований
+                        DateTime creationTime = File.GetCreationTime(filePath); // Отримуємо дати з оригінального файлу
+                        DateTime lastWriteTime = File.GetLastWriteTime(filePath);
+                        DateTime lastAccessTime = File.GetLastAccessTime(filePath);
                         string backupPath = recycledir + "/" + fileName;
                         while(File.Exists(backupPath))
                             backupPath += "1";
@@ -972,6 +975,9 @@ namespace FP_Auto_Video_Converter_2
                         //замінити розширення файла на .mp4 незалежно від того яке було
                         string filePathMP4 = Path.ChangeExtension(filePath, ".mp4");
                         File.Move(tmpfile, filePathMP4);
+                        File.SetCreationTime(filePathMP4, creationTime); // Переносимо дати на новий файл
+                        File.SetLastWriteTime(filePathMP4, lastWriteTime);
+                        File.SetLastAccessTime(filePathMP4, lastAccessTime);
 
                         //Оновити дані в таблиці
                         updateStats();
@@ -1184,7 +1190,8 @@ namespace FP_Auto_Video_Converter_2
         private void trackBarPreset_ValueChanged(object sender, EventArgs e)
         {
             getPresetInfo(trackBarPreset.Value, out string preset, out string description);
-            labelPresetMeaning.Text = $"{preset}\n{description}";
+            labelPresetName.Text = preset;
+            labelPresetMeaning.Text = description;
         }
 
         private void buttonClearBacups_Click(object sender, EventArgs e)
@@ -1369,17 +1376,25 @@ namespace FP_Auto_Video_Converter_2
         {
             string description = "FP AutoVideoConverter 2.2" +
                 "\n" +
-                "\nЦя програма дозволяє автоматизувати процес стиснення відеофайлів," +
-                "\nнадаючи зручний інтерфейс для обробки декількох файлів одночасно." +
-                "\nДопоможе стиснути ваші старі відео архіви щоб вони не займали так багато місця."+
+                "\nЦя програма дозволяє автоматизувати процес стиснення відеофайлів у кодек H.265 (HEVC), " +
+                "надаючи зручний інтерфейс для пакетного стиснення великої кількості відео." +
+                "\nВона допоможе вам зменшити розмір старих відеоархівів, щоб вони займали менше місця." +
+                "\nСтискання великої кількості відео може тривати дуже довго — від кількох годин до тижнів." +
                 "\n" +
-                "\nОсновні можливості:" +
-                "\n- Підтримка різних відеоформатів" +
-                "\n- Пакетна обробка файлів" +
-                "\n- Гнучке налаштування параметрів стиснення"+
+                "\nЯк користуватися програмою:" +
+                "\n - Перетягніть файли або папки у вікно програми для стиснення;" +
+                "\n - Програма одразу додасть усі відеофайли до черги;" +
+                "\n - Вона автоматично проаналізує формат кожного відео в черзі;" +
+                "\n - Виберіть налаштування стиснення: якість, роздільну здатність тощо;" +
+                "\n - За потреби видаліть з черги відео, які не потребують стиснення;" +
+                "\n - Натисніть \"Почати стиснення\" та дочекайтеся завершення процесу;" +
+                "\n - Після завершення перевірте стиснені файли, щоб переконатися в їхній якості;" +
+                "\n - Якщо якийсь файл виявився пошкодженим, відновіть його з папки резервних копій;" +
+                "\n - Коли робота завершена, очистіть папку резервних копій, щоб вона не займала місце." +
                 "\n" +
                 "\nРозробник: Dr. Failov" +
                 "\n2025";
+
 
             // Виведення опису через MessageBox
             MessageBox.Show(description, "Про програму", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -1445,8 +1460,8 @@ namespace FP_Auto_Video_Converter_2
 - Оновив кольори статусів
 - Захист від дропа файлів під час обробки
 - Додавання файлів з дропа та з аргументів відбувається в фоновому потоці завдяки чому програма не зависає якщо файлів багато
-- 
-- 
-- 
-- 
+- Виправлено сортування таблиці - тепер коректно працює сортування розміру та бітрейту
+- Переробив інтерфейс програми (сподіваюсь покращив)
+- Перенесення метаданих зі старого файла на новий
+- Доповнено опис програми
  */

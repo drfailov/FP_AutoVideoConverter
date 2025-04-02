@@ -85,6 +85,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="FP NEW.ico" />
+    <None Include="Resources\select-all.png" />
+    <None Include="Resources\check.png" />
+    <None Include="Resources\code.png" />
+    <None Include="Resources\resolution.png" />
+    <None Include="Resources\speedometer.png" />
+    <None Include="Resources\folder.png" />
     <None Include="Resources\information-button %281%29.png" />
     <None Include="Resources\logout.png" />
     <None Include="Resources\trash-bin %281%29.png" />
