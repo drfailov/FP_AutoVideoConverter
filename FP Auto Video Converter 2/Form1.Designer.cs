@@ -108,7 +108,7 @@
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.RowHeadersWidth = 20;
             this.dataGridView1.RowTemplate.Height = 24;
-            this.dataGridView1.Size = new System.Drawing.Size(1249, 777);
+            this.dataGridView1.Size = new System.Drawing.Size(1249, 820);
             this.dataGridView1.TabIndex = 0;
             this.dataGridView1.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellDoubleClick);
             // 
@@ -222,7 +222,7 @@
             this.richTextBox1.Name = "richTextBox1";
             this.richTextBox1.ReadOnly = true;
             this.richTextBox1.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedVertical;
-            this.richTextBox1.Size = new System.Drawing.Size(1249, 147);
+            this.richTextBox1.Size = new System.Drawing.Size(1249, 156);
             this.richTextBox1.TabIndex = 1;
             this.richTextBox1.Text = "---------------------------------- START ----------";
             this.richTextBox1.WordWrap = false;
@@ -241,8 +241,8 @@
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.richTextBox1);
-            this.splitContainer1.Size = new System.Drawing.Size(1249, 928);
-            this.splitContainer1.SplitterDistance = 777;
+            this.splitContainer1.Size = new System.Drawing.Size(1249, 980);
+            this.splitContainer1.SplitterDistance = 820;
             this.splitContainer1.TabIndex = 2;
             // 
             // panel1
@@ -269,7 +269,7 @@
             this.panel1.Dock = System.Windows.Forms.DockStyle.Right;
             this.panel1.Location = new System.Drawing.Point(1249, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(364, 978);
+            this.panel1.Size = new System.Drawing.Size(364, 1005);
             this.panel1.TabIndex = 3;
             // 
             // buttonRemoveLess720
@@ -308,7 +308,7 @@
             this.panel3.Controls.Add(this.buttonAbout);
             this.panel3.Controls.Add(this.labelStats);
             this.panel3.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel3.Location = new System.Drawing.Point(0, 679);
+            this.panel3.Location = new System.Drawing.Point(0, 706);
             this.panel3.Name = "panel3";
             this.panel3.Size = new System.Drawing.Size(364, 299);
             this.panel3.TabIndex = 16;
@@ -603,15 +603,15 @@
             // 
             this.panel2.Controls.Add(this.labelStatus);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel2.Location = new System.Drawing.Point(0, 928);
+            this.panel2.Location = new System.Drawing.Point(0, 980);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(1249, 50);
+            this.panel2.Size = new System.Drawing.Size(1249, 25);
             this.panel2.TabIndex = 4;
             // 
             // labelStatus
             // 
             this.labelStatus.AutoSize = true;
-            this.labelStatus.Location = new System.Drawing.Point(12, 15);
+            this.labelStatus.Location = new System.Drawing.Point(12, 3);
             this.labelStatus.Name = "labelStatus";
             this.labelStatus.Size = new System.Drawing.Size(197, 16);
             this.labelStatus.TabIndex = 0;
@@ -622,7 +622,7 @@
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1613, 978);
+            this.ClientSize = new System.Drawing.Size(1613, 1005);
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel1);

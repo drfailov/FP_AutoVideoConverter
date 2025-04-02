@@ -18,13 +18,13 @@ namespace FP_Auto_Video_Converter_2
         private const string FORMAT_AVC = "H264 (AVC)";
         private const string FORMAT_HEVC = "H265 (HEVC)";
         private string STATUS_WAITING = "Очікує";
-        private Color STATUS_WAITING_COLOR = Color.LightYellow;
+        private Color STATUS_WAITING_COLOR = Color.LightCyan;
         private string STATUS_PROCESSING = "Обробка";
         private Color STATUS_PROCESSING_COLOR = Color.Khaki;
         private string STATUS_COMPLETED = "Готово";
-        private Color STATUS_COMPLETED_COLOR = Color.PaleTurquoise;
+        private Color STATUS_COMPLETED_COLOR = Color.LightGreen;
         private string STATUS_ERROR = "Помилка";
-        private Color STATUS_ERROR_COLOR = Color.Tomato;
+        private Color STATUS_ERROR_COLOR = Color.LightCoral;
         private string STATUS_SKIPPED = "Пропущений";
         private Color STATUS_SKIPPED_COLOR = Color.LightGray;
 
@@ -450,9 +450,10 @@ namespace FP_Auto_Video_Converter_2
                 dataGridView1.Rows[index].Cells["ColumnFileFormat"].Value = format;
             dataGridView1.Rows[index].Cells["ColumnFileBitrate"].Value = bitrate;
             dataGridView1.Rows[index].Cells["ColumnFileResolution"].Value = resolution;
-            if(index == dataGridView1.Rows.Count - 2)
+
+            if (index == dataGridView1.Rows.Count - 2)
                 dataGridView1.FirstDisplayedScrollingRowIndex = 0;
-            else if (dataGridView1.FirstDisplayedScrollingRowIndex < index-22)
+            else if (dataGridView1.FirstDisplayedScrollingRowIndex < index - 22)
                 dataGridView1.FirstDisplayedScrollingRowIndex = index;
         }
         void updateStats()
