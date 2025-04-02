@@ -1,6 +1,6 @@
 # Про проект FP Auto Video Converter 2.0
 
-<img src="Screenshots/Screenshot 2025-04-01 231732.png" width="600"/>
+<img src="Screenshots/3.png" width="600"/>
 
 Ця програма дозволяє автоматизувати процес стиснення відеофайлів в H265 (HEVC),
 надаючи зручний інтерфейс для обробки декількох файлів одночасно.
@@ -18,24 +18,20 @@
 
 
 <p align="center">
-<img src="Screenshots/Screenshot 2025-04-01 230913.png" width="350"/>
-<img src="Screenshots/Screenshot 2025-04-01 230956.png" width="350"/>
+<img src="Screenshots/1.png" width="350"/>
+<img src="Screenshots/2.png" width="350"/>
 </p>
 
 <p align="center">
-<img src="Screenshots/Screenshot 2025-04-01 231043.png" width="350"/>
-<img src="Screenshots/Screenshot 2025-04-01 231119.png" width="350"/>
+<img src="Screenshots/3.png" width="350"/>
+<img src="Screenshots/4.png" width="350"/>
 </p>
 
 <p align="center">
-<img src="Screenshots/Screenshot 2025-04-01 231214.png" width="350"/>
-<img src="Screenshots/Screenshot 2025-04-01 231732.png" width="350"/>
-</p>
-
-<p align="center">
-<img src="Screenshots/Screenshot 2025-04-01 232658.png" width="350"/>
+<img src="Screenshots/5.png" width="350"/>
 </p>
 
 
-Розробник: Dr. Failov
+
+Розробник: **Dr. Failov**
 2025
