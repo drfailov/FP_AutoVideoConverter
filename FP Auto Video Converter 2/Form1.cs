@@ -274,7 +274,7 @@ namespace FP_Auto_Video_Converter_2
                 foreach (string file in files)
                 {
                     Invoke(new Action(() => addFileToList(file))); // Оновлення UI
-                    Thread.Sleep(10);  //to let UI be responsive
+                    Thread.Sleep(20);  //to let UI be responsive
                 }
                 status("Готово.");
 
@@ -294,48 +294,63 @@ namespace FP_Auto_Video_Converter_2
             }
         }
 
+        DateTime lastDoEventsTime = DateTime.MinValue;
         private void addFileToList(string filePath)
         {
-            //check folder
-            if (Directory.Exists(filePath))
+            try
             {
-                log("OPEN, Add all files from folder: " + Path.GetFileName(filePath));
-                foreach (string file in Directory.GetDirectories(filePath))
-                    addFileToList(file);
-                foreach (string file in Directory.GetFiles(filePath))
-                    addFileToList(file);
-                return;
-            }
-
-            //check format
-            if (!filePath.ToLower().EndsWith(".mp4") && !filePath.ToLower().EndsWith(".avi") && !filePath.ToLower().EndsWith(".mov")
-                && !filePath.ToLower().EndsWith(".mpg") && !filePath.ToLower().EndsWith(".3gp") && !filePath.ToLower().EndsWith(".wmv")
-                && !filePath.ToLower().EndsWith(".m4a") && !filePath.ToLower().EndsWith(".mkv"))
-            {
-                log("SKIP, File have unsupported format: " + Path.GetFileName(filePath));
-                return;
-            }
-            // check duplicate
-            for (int i = 0; i < dataGridView1.Rows.Count; i++)
-            {
-                if (!dataGridView1.Rows[i].IsNewRow && dataGridView1.Rows[i].Cells["ColumnFilePath"].Value.ToString().Equals(filePath))
+                //check folder
+                if (Directory.Exists(filePath))
                 {
-                    log("SKIP, Duplicate found: " + Path.GetFileName(filePath));
+                    log("ВІДКРИТИ ПАПКУ: " + Path.GetFileName(filePath));
+                    foreach (string file in Directory.GetDirectories(filePath))
+                        addFileToList(file);
+                    foreach (string file in Directory.GetFiles(filePath))
+                        addFileToList(file);
                     return;
                 }
+
+                //check format
+                if (!filePath.ToLower().EndsWith(".mp4") && !filePath.ToLower().EndsWith(".avi") && !filePath.ToLower().EndsWith(".mov")
+                    && !filePath.ToLower().EndsWith(".mpg") && !filePath.ToLower().EndsWith(".3gp") && !filePath.ToLower().EndsWith(".wmv")
+                    && !filePath.ToLower().EndsWith(".m4a") && !filePath.ToLower().EndsWith(".mkv"))
+                {
+                    //log("ПРОПУСТИТИ, File have unsupported format: " + Path.GetFileName(filePath));
+                    return;
+                }
+                // check duplicate
+                for (int i = 0; i < dataGridView1.Rows.Count; i++)
+                {
+                    if (!dataGridView1.Rows[i].IsNewRow && dataGridView1.Rows[i].Cells["ColumnFilePath"].Value.ToString().Equals(filePath))
+                    {
+                        log("ПРОПУСТИТИ, Знайдено дублікат: " + Path.GetFileName(filePath));
+                        return;
+                    }
+                }
+
+
+                int rowIndex = dataGridView1.Rows.Add();
+                dataGridView1.Rows[rowIndex].Cells["ColumnFilePath"].Value = filePath;
+                dataGridView1.Rows[rowIndex].Cells["ColumnFileName"].Value = Path.GetFileName(filePath);
+                dataGridView1.Rows[rowIndex].Cells["ColumnFileFolder"].Value = Path.GetFileName(Path.GetDirectoryName(filePath)) ?? "-";
+                dataGridView1.Rows[rowIndex].Cells["ColumnFileSize"].Value = FormatBytes(new FileInfo(filePath).Length);
+                dataGridView1.Rows[rowIndex].Cells["ColumnFileFormat"].Value = FORMAT_PENDING;
+                dataGridView1.Rows[rowIndex].Cells["ColumnFileStatus"].Value = STATUS_WAITING;
+                dataGridView1.Rows[rowIndex].Cells["ColumnFileStatus"].Style.BackColor = STATUS_WAITING_COLOR;
+                dataGridView1.Rows[rowIndex].Cells["ColumnFileNewSize"].Value = " ";
+                log("Файл додано: " + filePath);
+
+                TimeSpan timeSinceLast = DateTime.Now - lastDoEventsTime;
+                if(timeSinceLast.TotalMilliseconds > 1500)
+                {
+                    Application.DoEvents();
+                    lastDoEventsTime = DateTime.Now;
+                }
             }
-
-
-            int rowIndex = dataGridView1.Rows.Add();
-            dataGridView1.Rows[rowIndex].Cells["ColumnFilePath"].Value = filePath;
-            dataGridView1.Rows[rowIndex].Cells["ColumnFileName"].Value = Path.GetFileName(filePath);
-            dataGridView1.Rows[rowIndex].Cells["ColumnFileFolder"].Value = Path.GetFileName(Path.GetDirectoryName( filePath)) ?? "-";
-            dataGridView1.Rows[rowIndex].Cells["ColumnFileSize"].Value = FormatBytes(new FileInfo(filePath).Length);
-            dataGridView1.Rows[rowIndex].Cells["ColumnFileFormat"].Value = FORMAT_PENDING;
-            dataGridView1.Rows[rowIndex].Cells["ColumnFileStatus"].Value = STATUS_WAITING;
-            dataGridView1.Rows[rowIndex].Cells["ColumnFileStatus"].Style.BackColor = STATUS_WAITING_COLOR;
-            dataGridView1.Rows[rowIndex].Cells["ColumnFileNewSize"].Value = " ";
-            log("File added: " + filePath);
+            catch (Exception e)
+            {
+                log(e.ToString());
+            }
         }
 
 
@@ -1478,4 +1493,5 @@ namespace FP_Auto_Video_Converter_2
 - Перенесення метаданих зі старого файла на новий
 - Доповнено опис програми
 - Запобігання вимкненню або сну компа поки відкрита програма
+- Додано костиль щоб програма не висла якщо скормити їй 10тис файлів
  */
