@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
@@ -17,15 +18,15 @@ namespace FP_Auto_Video_Converter_2
         private const string FORMAT_PENDING = "Pending...";
         private const string FORMAT_AVC = "H264 (AVC)";
         private const string FORMAT_HEVC = "H265 (HEVC)";
-        private string STATUS_WAITING = "Очікує";
+        private const string STATUS_WAITING = "Очікує";
         private Color STATUS_WAITING_COLOR = Color.LightCyan;
-        private string STATUS_PROCESSING = "Обробка";
+        private const string STATUS_PROCESSING = "Обробка";
         private Color STATUS_PROCESSING_COLOR = Color.Khaki;
-        private string STATUS_COMPLETED = "Готово";
+        private const string STATUS_COMPLETED = "Готово";
         private Color STATUS_COMPLETED_COLOR = Color.LightGreen;
-        private string STATUS_ERROR = "Помилка";
+        private const string STATUS_ERROR = "Помилка";
         private Color STATUS_ERROR_COLOR = Color.LightCoral;
-        private string STATUS_SKIPPED = "Пропущений";
+        private const string STATUS_SKIPPED = "Пропущений";
         private Color STATUS_SKIPPED_COLOR = Color.LightGray;
 
         string tmpfile = Directory.GetCurrentDirectory() + "\\tmp.mp4";
@@ -116,8 +117,8 @@ namespace FP_Auto_Video_Converter_2
             processArgumentsOnLoad();
 
             //якщо додались якісь файли - почати аналіз формату
-            if (dataGridView1.Rows.Count > 1)
-                startDetectingFormat();
+            //if (dataGridView1.Rows.Count > 1)
+            //    startDetectingFormat();
         }
 
         void processArgumentsOnLoad()
@@ -178,35 +179,51 @@ namespace FP_Auto_Video_Converter_2
 
 
             // Перевірка, чи є адреса папки в аргументах
+            List<string> filesToAdd = new List<string>();
             for (int i = 1; i < args.Length; i++)
             {
                 string arg = args[i];
                 if (Directory.Exists(arg))  // Перевірка, чи є папка
                 {
                     log($"Знайдена папка: {arg}");
-                    addFileToList(arg);
+                    filesToAdd.Add(arg);
                 }
                 else if (File.Exists(arg))  // Перевірка на файл
                 {
                     log($"Знайдений файл: {arg}");
-                    addFileToList(arg);
+                    filesToAdd.Add(arg);
                 }
+            }
+            if (filesToAdd.Count > 0)
+            {
+                string[] files = filesToAdd.ToArray();
+                log($"Починаю додавати {files.Length} файлів до списку...");
+                workingThread = new Thread(() => addFilesAsync(files));
+                workingThread.IsBackground = true;
+                workingThread.Start();
             }
         }
         void processArgumentsOnFormatDetectingFinished()
         {
-            if (isArgument("-clearH265"))
-                buttonRemoveH265_Click(null, null);
-            if (isArgument("-clearLess2"))
-                buttonRemoveLess2MBit_Click(null, null);
-            if (isArgument("-clearLess4"))
-                buttonRemoveLess4MBit_Click(null, null);
-            if (isArgument("-clearLess720"))
-                buttonRemoveLess720_Click(null, null);
-            if (isArgument("-clearLess1080"))
-                buttonRemoveLess1080_Click(null, null);
-            if (isArgument("-start"))
-                buttonStart_Click(null, null);            
+            try
+            {
+                if (isArgument("-clearH265"))
+                    buttonRemoveH265_Click(null, null);
+                if (isArgument("-clearLess2"))
+                    buttonRemoveLess2MBit_Click(null, null);
+                if (isArgument("-clearLess4"))
+                    buttonRemoveLess4MBit_Click(null, null);
+                if (isArgument("-clearLess720"))
+                    buttonRemoveLess720_Click(null, null);
+                if (isArgument("-clearLess1080"))
+                    buttonRemoveLess1080_Click(null, null);
+                if (isArgument("-start"))
+                    buttonStart_Click(null, null);
+            }
+            catch (Exception e)
+            {
+                log(e.ToString());
+            }
         }
 
 
@@ -232,14 +249,39 @@ namespace FP_Auto_Video_Converter_2
                 return;
             }
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            log("Починаю додавати файли до списку...");
-            foreach (string file in files)
+            log($"Починаю додавати {files.Length} файлів до списку...");
+            workingThread = new Thread(() => addFilesAsync(files));
+            workingThread.IsBackground = true;
+            workingThread.Start();
+        }
+        void addFilesAsync(string[] files)
+        {
+            try
             {
-                addFileToList(file);
+                status("Додаю файли...");
+                buttonsActive(false);
+                Thread.Sleep(100);
+                foreach (string file in files)
+                {
+                    Invoke(new Action(() => addFileToList(file))); // Оновлення UI
+                    Thread.Sleep(10);  //to let UI be responsive
+                }
+                status("Готово.");
+
+                Invoke(new Action(() =>
+                {
+                    log("Всього файлів: " + (dataGridView1.Rows.Count - 1));
+                    buttonsActive(true);  //Вернути юзеру кнопочки
+                    updateStats();  //Оновити циферки
+                    workingThread = null;  //щоб другі функції знали що можна починати роботу
+                    startDetectingFormat(); //якщо додались якісь файли - почати аналіз формату
+                }));
             }
-            log("Всього файлів: " + (dataGridView1.Rows.Count - 1));
-            startDetectingFormat();
-            updateStats();
+            finally
+            {
+                if(Thread.CurrentThread == workingThread)
+                    workingThread = null;
+            }
         }
 
         private void addFileToList(string filePath)
@@ -339,6 +381,7 @@ namespace FP_Auto_Video_Converter_2
                     }
                 }
                 lastLog = s;
+                //Application.DoEvents();
             }
             catch (Exception) { }
             return s;
@@ -439,7 +482,10 @@ namespace FP_Auto_Video_Converter_2
                 buttonsActive(true);
                 status("Готово.");
                 workingThread = null;
-                processArgumentsOnFormatDetectingFinished();
+                Invoke(new Action(() =>
+                {
+                    processArgumentsOnFormatDetectingFinished();
+                }));
             }
         }
         void updateFormatInDataGrid(int index, string format, string bitrate, string resolution)
@@ -630,6 +676,7 @@ namespace FP_Auto_Video_Converter_2
                 return s;
             }
             labelStatus.Text = s;
+            Application.DoEvents();
             return s;
         }
         DataGridViewColumn sortedColumn;
@@ -681,7 +728,7 @@ namespace FP_Auto_Video_Converter_2
         private void buttonRemoveLess2MBit_Click(object sender, EventArgs e)
         {
             try { 
-                log("Видаляю зі списку всі що менше 2 мегабіт");
+                status(log("Видаляю зі списку всі що менше 2 мегабіт"));
                 int removed = 0;
                 for (int i = dataGridView1.Rows.Count - 1; i >= 0; i--)
                 {
@@ -699,6 +746,7 @@ namespace FP_Auto_Video_Converter_2
                     }
                 }
                 updateStats();
+                status("Готово.");
                 log("Видалено " + removed + " рядків.");
             }
             catch (Exception ex)
@@ -709,8 +757,8 @@ namespace FP_Auto_Video_Converter_2
 
         private void buttonRemoveLess4MBit_Click(object sender, EventArgs e)
         {
-            try { 
-                log("Видаляю зі списку всі що менше 4 мегабіт");
+            try {
+                status(log("Видаляю зі списку всі що менше 4 мегабіт"));
                 int removed = 0;
                 for (int i = dataGridView1.Rows.Count - 1; i >= 0; i--)
                 {
@@ -728,6 +776,7 @@ namespace FP_Auto_Video_Converter_2
                     }
                 }
                 updateStats();
+                status("Готово.");
                 log("Видалено " + removed + " рядків.");
             }
             catch (Exception ex)
@@ -740,7 +789,7 @@ namespace FP_Auto_Video_Converter_2
         {
             try
             {
-                log("Видаляю зі списку всі що вже в 265 кодеку");
+                status(log("Видаляю зі списку всі що вже в 265 кодеку"));
                 int removed = 0;
                 for (int i = dataGridView1.Rows.Count - 1; i >= 0; i--)
                 {
@@ -756,6 +805,7 @@ namespace FP_Auto_Video_Converter_2
                     }
                 }
                 updateStats();
+                status("Готово.");
                 log("Видалено " + removed + " рядків.");
             }
             catch (Exception ex)
@@ -1220,7 +1270,7 @@ namespace FP_Auto_Video_Converter_2
         {
             try
             {
-                log("Видаляю зі списку всі що роздільною здатністю менше 1080p");
+                status(log("Видаляю зі списку всі що роздільною здатністю менше 1080p"));
                 int removed = 0;
                 for (int i = dataGridView1.Rows.Count - 1; i >= 0; i--)
                 {
@@ -1241,6 +1291,7 @@ namespace FP_Auto_Video_Converter_2
                     }
                 }
                 updateStats();
+                status("Готово.");
                 log("Видалено " + removed + " рядків.");
             }
             catch (Exception ex)
@@ -1253,7 +1304,7 @@ namespace FP_Auto_Video_Converter_2
         {
             try
             {
-                log("Видаляю зі списку всі що роздільною здатністю менше 720p");
+                status(log("Видаляю зі списку всі що роздільною здатністю менше 720p"));
                 int removed = 0;
                 for (int i = dataGridView1.Rows.Count - 1; i >= 0; i--)
                 {
@@ -1274,6 +1325,7 @@ namespace FP_Auto_Video_Converter_2
                     }
                 }
                 updateStats();
+                status("Готово.");
                 log("Видалено " + removed + " рядків.");
             }
             catch (Exception ex)
