@@ -32,7 +32,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>FP NEW.ico</ApplicationIcon>
+    <ApplicationIcon>Logo-128.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -85,6 +85,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="FP NEW.ico" />
+    <Content Include="Logo-128.ico" />
+    <None Include="Resources\terminal.png" />
     <None Include="Resources\select-all.png" />
     <None Include="Resources\check.png" />
     <None Include="Resources\code.png" />

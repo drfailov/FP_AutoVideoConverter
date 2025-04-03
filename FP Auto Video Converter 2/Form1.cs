@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
+using static System.Windows.Forms.AxHost;
 
 namespace FP_Auto_Video_Converter_2
 {
@@ -30,8 +31,8 @@ namespace FP_Auto_Video_Converter_2
         private const string STATUS_SKIPPED = "Пропущений";
         private Color STATUS_SKIPPED_COLOR = Color.LightGray;
 
-        string tmpfile = Directory.GetCurrentDirectory() + "\\tmp.mp4";
-        string recycledir = Directory.GetCurrentDirectory() + "\\ConvertedRecycle";
+        string tmpfile;
+        string recycledir;
         bool stop = false;
         Thread workingThread;
         Process ffmpeg = null;
@@ -53,6 +54,9 @@ namespace FP_Auto_Video_Converter_2
         public Form1()
         {
             InitializeComponent();
+            string baseDir = AppDomain.CurrentDomain.BaseDirectory; // Отримуємо шлях до папки з програмою
+            tmpfile = Path.Combine(baseDir, "tmp.mp4");
+            recycledir = Path.Combine(baseDir, "ConvertedRecycle");
         }
 
         bool isArgument(string argument)
@@ -105,7 +109,21 @@ namespace FP_Auto_Video_Converter_2
         private void Form1_Load(object sender, EventArgs e)
         {
             log("Дата збірки: " + File.GetLastWriteTime(Assembly.GetExecutingAssembly().Location));
-            
+
+
+            try
+            {
+                string[] args = Environment.GetCommandLineArgs();
+                if(args.Length > 1)
+                {
+                    Text += $" (прийнято {args.Length-1} аргументів)";
+                }
+            }
+            catch (Exception ex)
+            {
+                log(ex.Message);
+            }
+
             //перевірити чи проги на місці
             string baseDir = AppDomain.CurrentDomain.BaseDirectory; // Отримуємо шлях до папки з програмою
             string mediaInfoPath = Path.Combine(baseDir, "MediaInfo.exe");
@@ -131,18 +149,13 @@ namespace FP_Auto_Video_Converter_2
             
         }
 
-        void processArgumentsOnLoad()
+        private string getArgumentsHelp()
         {
-            string[] args = Environment.GetCommandLineArgs();
-            // Перевірка на наявність аргументів
-            if (args.Length < 2)
-                return;
-            if (isArgument("-help") || isArgument("-h") || isArgument("help") || isArgument("\\h") || isArgument("/h"))
-            {
-                log("Аргументи командного рядка. Ними можна буквально \"натикати\" потрібні кнопки аргументами." +
+            return "Цю програму в задачах автоматизації можна викликати з командного рядка з аргументами." +
+                "\nАргументи командного рядка. Ними можна буквально \"натикати\" потрібні кнопки аргументами." +
                     "\n\n \"Адреса папки\" - додати папку. Пишіть з лапками, так надійніше." +
                     "\n\n \"Адреса файлу\" - додати файл. Пишіть з лапками, так надійніше." +
-                    "\n\n -help - вивести це повідомлення в цей лог." +
+                    "\n\n -help - вивести це повідомлення в лог." +
                     "\n\n -skipY - поставити галочку \"Пропускати файли які вийшли більші ніж були\"." +
                     "\n\n -skipN - зняти галочку \"Пропускати файли які вийшли більші ніж були\"." +
                     "\n\n -reduceFramerate30 - Поставити галочку \"Зменшити частоту кадрів до 30\"." +
@@ -151,10 +164,8 @@ namespace FP_Auto_Video_Converter_2
                     "\n\n -scaleN - Зняти галочку \"Зменшити роздільну здатність до\"." +
                     "\n\n -crf33 - Задати CRF=33 (або інше число)." +
                     "\n\n -preset4 - Задати preset=faster (або інший, число до 10)." +
-                    "\n\n -clearLess720 - Очистити зі списку всі файли менші за 720 по меншій стороні." +
-                    "\n\n -clearLess1080 - Очистити зі списку всі файли менші за 1080 по меншій стороні." +
-                    "\n\n -clearLess2 - Очистити зі списку всі файли бітрейтом менше 2 мегабіт." +
-                    "\n\n -clearLess4 - Очистити зі списку всі файли бітрейтом менше 4 мегабіт." +
+                    "\n\n -clearResolution1080 - Очистити зі списку всі файли менші за 1080 по меншій стороні (або інше число)." +
+                    "\n\n -clearBitrate10 - Очистити зі списку всі файли бітрейтом менше 10 мегабіт  (або інше число)." +
                     "\n\n -clearH265 - Очистити зі списку всі файли що вже в кодеку H265 (HEVC)." +
                     "\n\n -start - автоматичний запуск стиснення без втручання користувача." +
                     "\n\n -exit - автоматично вийти коли завершиться стиснення." +
@@ -162,9 +173,17 @@ namespace FP_Auto_Video_Converter_2
                     "\n Аргументи чутливі до регістру." +
                     "\n Невалідні аргументи ігноруються." +
                     "\n Значення які не уточнено аргументами залишаться за замовчуванням." +
-                    "\n "
-                    );
-            }
+                    "\n ";
+        }
+
+        void processArgumentsOnLoad()
+        {
+            string[] args = Environment.GetCommandLineArgs();
+            // Перевірка на наявність аргументів
+            if (args.Length < 2)
+                return;
+            if (isArgument("-help") || isArgument("-h") || isArgument("help") || isArgument("\\h") || isArgument("/h"))
+                log(getArgumentsHelp());
             if (isArgument("-skipY"))
                 checkBoxSkipIfBigger.Checked = true;
             if (isArgument("-skipN"))
@@ -219,14 +238,16 @@ namespace FP_Auto_Video_Converter_2
             {
                 if (isArgument("-clearH265"))
                     buttonRemoveH265_Click(null, null);
-                if (isArgument("-clearLess2"))
-                    buttonRemoveLess2MBit_Click(null, null);
-                if (isArgument("-clearLess4"))
-                    buttonRemoveLess4MBit_Click(null, null);
-                if (isArgument("-clearLess720"))
-                    buttonRemoveLess720_Click(null, null);
-                if (isArgument("-clearLess1080"))
-                    buttonRemoveLess1080_Click(null, null);
+                if (getArgument("-clearBitrate*", out int bitrate))
+                {
+                    textBoxBitrateToClear.Text = bitrate.ToString();
+                    buttonRemoveLessMBit_Click(null, null);
+                }
+                if (getArgument("-clearResolution*", out int resolution))
+                {
+                    textBoxResolutionToClear.Text = resolution.ToString();
+                    buttonRemoveLessPx_Click(null, null);
+                }
                 if (isArgument("-start"))
                     buttonStart_Click(null, null);
             }
@@ -302,7 +323,7 @@ namespace FP_Auto_Video_Converter_2
                 //check folder
                 if (Directory.Exists(filePath))
                 {
-                    log("ВІДКРИТИ ПАПКУ: " + Path.GetFileName(filePath));
+                    log("ВІДКРИТИ папку: " + Path.GetFileName(filePath));
                     foreach (string file in Directory.GetDirectories(filePath))
                         addFileToList(file);
                     foreach (string file in Directory.GetFiles(filePath))
@@ -338,7 +359,7 @@ namespace FP_Auto_Video_Converter_2
                 dataGridView1.Rows[rowIndex].Cells["ColumnFileStatus"].Value = STATUS_WAITING;
                 dataGridView1.Rows[rowIndex].Cells["ColumnFileStatus"].Style.BackColor = STATUS_WAITING_COLOR;
                 dataGridView1.Rows[rowIndex].Cells["ColumnFileNewSize"].Value = " ";
-                log("Файл додано: " + filePath);
+                log($"Файл додано ({rowIndex}): {filePath}");
 
                 TimeSpan timeSinceLast = DateTime.Now - lastDoEventsTime;
                 if(timeSinceLast.TotalMilliseconds > 1500)
@@ -451,7 +472,7 @@ namespace FP_Auto_Video_Converter_2
                 string mediaInfoPath = "MediaInfo.exe";
                 for (int i = 0; i < dataGridView1.Rows.Count; i++)
                 {
-                    status($"Отримання інформації про формат...");
+                    status($"Отримання інформації про формат ({i}/{dataGridView1.Rows.Count}) ...");
                     buttonsActive(false);
                     if (dataGridView1.Rows[i].IsNewRow)
                         continue;
@@ -715,10 +736,10 @@ namespace FP_Auto_Video_Converter_2
             buttonClearSelected.Enabled = active;
             buttonStart.Enabled = active;
             buttonRemoveH265.Enabled = active;
-            buttonRemoveLess2MBit.Enabled = active;
-            buttonRemoveLess4MBit.Enabled = active;
-            buttonRemoveLess1080.Enabled = active;
-            buttonRemoveLess720.Enabled = active;
+            textBoxBitrateToClear.Enabled = active;
+            buttonRemoveLessMBit.Enabled = active;
+            textBoxResolutionToClear.Enabled = active;
+            buttonRemoveLessPx.Enabled = active;
             buttonRemoveAll.Enabled = active;
             trackBarCRF.Enabled = active;
             trackBarPreset.Enabled = active;
@@ -726,7 +747,6 @@ namespace FP_Auto_Video_Converter_2
             checkBoxSkipIfBigger.Enabled = active;
             textBoxScaleDownSmallerSide.Enabled = active;
             checkBoxScaleDown.Enabled = active;
-            buttonAbout.Enabled = active;
             buttonExit.Enabled = active;
             if (active)
             {
@@ -750,40 +770,16 @@ namespace FP_Auto_Video_Converter_2
             }
         }
 
-        private void buttonRemoveLess2MBit_Click(object sender, EventArgs e)
-        {
-            try { 
-                status(log("Видаляю зі списку всі що менше 2 мегабіт"));
-                int removed = 0;
-                for (int i = dataGridView1.Rows.Count - 1; i >= 0; i--)
-                {
-                    DataGridViewRow row = dataGridView1.Rows[i];
-                    if (!row.IsNewRow)
-                    {
-                        string inputText = row.Cells["ColumnFileBitrate"].Value.ToString();
-                        string numericValueStr = inputText.Replace(" МБіт", "");
-                        double numericBitrate = double.Parse(numericValueStr);
-                        if(numericBitrate < 2) 
-                        {
-                            dataGridView1.Rows.Remove(row);
-                            removed++;
-                        }
-                    }
-                }
-                updateStats();
-                status("Готово.");
-                log("Видалено " + removed + " рядків.");
-            }
-            catch (Exception ex)
-            {
-                log("Помилка: " + ex.Message);
-            }
-        }
-
-        private void buttonRemoveLess4MBit_Click(object sender, EventArgs e)
+        private void buttonRemoveLessMBit_Click(object sender, EventArgs e)
         {
             try {
-                status(log("Видаляю зі списку всі що менше 4 мегабіт"));
+                double.TryParse(textBoxBitrateToClear.Text, out double filterBitrate);
+                if (filterBitrate <= 0 || filterBitrate > 6000)
+                {
+                    log("Впишіть нормальне значення бітрейту.");
+                    return;
+                }
+                status(log($"Видаляю зі списку всі що менше {filterBitrate} МБіт/с..."));
                 int removed = 0;
                 for (int i = dataGridView1.Rows.Count - 1; i >= 0; i--)
                 {
@@ -793,7 +789,7 @@ namespace FP_Auto_Video_Converter_2
                         string inputText = row.Cells["ColumnFileBitrate"].Value.ToString();
                         string numericValueStr = inputText.Replace(" МБіт", "");
                         double numericBitrate = double.Parse(numericValueStr);
-                        if (numericBitrate < 4)
+                        if (numericBitrate < filterBitrate)
                         {
                             dataGridView1.Rows.Remove(row);
                             removed++;
@@ -1298,45 +1294,17 @@ namespace FP_Auto_Video_Converter_2
             }
         }
 
-        private void buttonRemoveLess1080_Click(object sender, EventArgs e)
+        private void buttonRemoveLessPx_Click(object sender, EventArgs e)
         {
             try
             {
-                status(log("Видаляю зі списку всі що роздільною здатністю менше 1080p"));
-                int removed = 0;
-                for (int i = dataGridView1.Rows.Count - 1; i >= 0; i--)
+                double.TryParse(textBoxResolutionToClear.Text, out double filterSmallerSide);
+                if (filterSmallerSide <= 10 || filterSmallerSide > 6000)
                 {
-                    DataGridViewRow row = dataGridView1.Rows[i];
-                    if (!row.IsNewRow)
-                    {
-                        string fileResolution = row.Cells["ColumnFileResolution"].Value.ToString();
-                        string[] resolutionParts = fileResolution.Split('x');  //1920x1080x90
-                        int width = int.Parse(resolutionParts[0]); // 1920
-                        int height = int.Parse(resolutionParts[1]); // 1080
-                        int rotation = int.Parse(resolutionParts[2]); // 0   90   180    270
-                        float smallerSide = Math.Min(width, height);
-                        if (smallerSide < 1080)
-                        {
-                            dataGridView1.Rows.Remove(row);
-                            removed++;
-                        }
-                    }
+                    log("Впишіть нормальне значення роздільної здатності.");
+                    return;
                 }
-                updateStats();
-                status("Готово.");
-                log("Видалено " + removed + " рядків.");
-            }
-            catch (Exception ex)
-            {
-                log("Помилка: " + ex.Message);
-            }
-        }
-
-        private void buttonRemoveLess720_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                status(log("Видаляю зі списку всі що роздільною здатністю менше 720p"));
+                status(log($"Видаляю зі списку всі що роздільною здатністю менше {filterSmallerSide} px по меншій стороні..."));
                 int removed = 0;
                 for (int i = dataGridView1.Rows.Count - 1; i >= 0; i--)
                 {
@@ -1349,7 +1317,7 @@ namespace FP_Auto_Video_Converter_2
                         int height = int.Parse(resolutionParts[1]); // 1080
                         int rotation = int.Parse(resolutionParts[2]); // 0   90   180    270
                         float smallerSide = Math.Min(width, height);
-                        if (smallerSide < 720)
+                        if (smallerSide < filterSmallerSide)
                         {
                             dataGridView1.Rows.Remove(row);
                             removed++;
@@ -1402,7 +1370,7 @@ namespace FP_Auto_Video_Converter_2
 
         private void buttonAbout_Click(object sender, EventArgs e)
         {
-            string description = "FP AutoVideoConverter 2.2" +
+            string description = "FP AutoVideoConverter 2.3" +
                 "\n" +
                 "\nЦя програма дозволяє автоматизувати процес стиснення відеофайлів у кодек H.265 (HEVC), " +
                 "надаючи зручний інтерфейс для пакетного стиснення великої кількості відео." +
@@ -1467,11 +1435,38 @@ namespace FP_Auto_Video_Converter_2
                     else e.SortResult = 0;  // Якщо рівні
                     e.Handled = true; // Уникаємо стандартного сортування
                 }
+                if (e.Column.Name.Equals("ColumnFileResolution"))
+                {
+                    string[] resolution1Parts = value1String.Split('x');  //1920x1080x90
+                    int width1 = int.Parse(resolution1Parts[0]); // 1920
+                    int height1 = int.Parse(resolution1Parts[1]); // 1080
+                    int rotation1 = int.Parse(resolution1Parts[2]); // 0   90   180    270
+                    float smallerSide1 = Math.Min(width1, height1);
+
+                    string[] resolution2Parts = value2String.Split('x');  //1920x1080x90
+                    int width2 = int.Parse(resolution2Parts[0]); // 1920
+                    int height2 = int.Parse(resolution2Parts[1]); // 1080
+                    int rotation2 = int.Parse(resolution2Parts[2]); // 0   90   180    270
+                    float smallerSide2 = Math.Min(width2, height2);
+
+                    if (smallerSide1 < smallerSide2) e.SortResult = -1; // Якщо перше значення менше
+                    else if (smallerSide1 > smallerSide2) e.SortResult = 1;  // Якщо перше значення більше
+                    else e.SortResult = 0;  // Якщо рівні
+                    e.Handled = true; // Уникаємо стандартного сортування
+                }
             }
             catch (Exception ex)
             {
                 log(ex.ToString());
             }
+        }
+
+        private void buttonHelpTerminal_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show(
+                getArgumentsHelp() + 
+                "\n\nВи можете скопіювати текст з цього вікна натиснувши CTRL+C.", 
+                "Виклик через командний рядок", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
 }
@@ -1494,4 +1489,17 @@ namespace FP_Auto_Video_Converter_2
 - Доповнено опис програми
 - Запобігання вимкненню або сну компа поки відкрита програма
 - Додано костиль щоб програма не висла якщо скормити їй 10тис файлів
+
+2.3
+- Додано лічильник при додаванні файлів
+- Додано лічильник при визначенні формату
+- Оновлено мімінамальний розмір вікна
+- Додано лого
+- Додано налаштування фільтра бітрейту і роздільної здатності
+- правильне сортування роздільної здатності
+- Змінено спосіб визначення шляху до папки з бекапами
+- Якщо програма запущена з аргументами то про це писатиме в заголовку
+- Доповнено зразки батніка
+- Доповнено документацію
+- Покращення підказок і інтерфейсу
  */
