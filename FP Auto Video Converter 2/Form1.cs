@@ -37,7 +37,9 @@ namespace FP_Auto_Video_Converter_2
         Thread workingThread;
         Process ffmpeg = null;
 
-        private Stopwatch stopwatch = new Stopwatch();
+        private Stopwatch convertTime = new Stopwatch();  //convert time
+        private Stopwatch upTime = new Stopwatch(); //app start
+
 
         int logLineLength = 160;
         private string lastLog = "";
@@ -110,7 +112,7 @@ namespace FP_Auto_Video_Converter_2
         {
             log("Дата збірки: " + File.GetLastWriteTime(Assembly.GetExecutingAssembly().Location));
 
-
+            //Виводити в заголовок кількість аргументів
             try
             {
                 string[] args = Environment.GetCommandLineArgs();
@@ -121,19 +123,42 @@ namespace FP_Auto_Video_Converter_2
             }
             catch (Exception ex)
             {
-                log(ex.Message);
+                log(ex.ToString());
             }
 
-            //перевірити чи проги на місці
-            string baseDir = AppDomain.CurrentDomain.BaseDirectory; // Отримуємо шлях до папки з програмою
-            string mediaInfoPath = Path.Combine(baseDir, "MediaInfo.exe");
-            string ffmpegPath = Path.Combine(baseDir, "ffmpeg.exe");
-            if (!File.Exists(mediaInfoPath) || !File.Exists(ffmpegPath))
+            //Виводити в заголовок кількість часу роботи
+            try
             {
-                MessageBox.Show("Не знайдено необхідні файли:\n" +
-                                (!File.Exists(mediaInfoPath) ? "- MediaInfo.exe\n" : "") +
-                                (!File.Exists(ffmpegPath) ? "- ffmpeg.exe\n" : ""),
-                                "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                upTime.Start();
+                System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
+                timer.Interval = 1000;
+                string baseTitle = Text;
+                timer.Tick += (ts, te) => Text = $"{baseTitle}   |   {TimeSpan.FromSeconds(upTime.ElapsedMilliseconds / 1000):hh\\:mm\\:ss}";
+                timer.Start();
+            }
+            catch (Exception ex)
+            {
+                log(ex.ToString());
+            }
+
+
+            //перевірити чи проги на місці
+            try
+            {
+                string baseDir = AppDomain.CurrentDomain.BaseDirectory; // Отримуємо шлях до папки з програмою
+                string mediaInfoPath = Path.Combine(baseDir, "MediaInfo.exe");
+                string ffmpegPath = Path.Combine(baseDir, "ffmpeg.exe");
+                if (!File.Exists(mediaInfoPath) || !File.Exists(ffmpegPath))
+                {
+                    MessageBox.Show("Не знайдено необхідні файли:\n" +
+                                    (!File.Exists(mediaInfoPath) ? "- MediaInfo.exe\n" : "") +
+                                    (!File.Exists(ffmpegPath) ? "- ffmpeg.exe\n" : ""),
+                                    "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                log(ex.ToString());
             }
 
 
@@ -158,8 +183,8 @@ namespace FP_Auto_Video_Converter_2
                     "\n\n -help - вивести це повідомлення в лог." +
                     "\n\n -skipY - поставити галочку \"Пропускати файли які вийшли більші ніж були\"." +
                     "\n\n -skipN - зняти галочку \"Пропускати файли які вийшли більші ніж були\"." +
-                    "\n\n -reduceFramerate30 - Поставити галочку \"Зменшити частоту кадрів до 30\"." +
-                    "\n\n -reduceFramerateN - Зняти галочку \"Зменшити частоту кадрів до 30\"." +
+                    "\n\n -reduceFramerate30 - Поставити галочку \"Зменшити частоту кадрів до\" і вписати \"30\" (або інше число). " +
+                    "\n\n -reduceFramerateN - Зняти галочку \"Зменшити частоту кадрів до \"." +
                     "\n\n -scale1080 - Поставити галочку \"Зменшити роздільну здатність до\" і вписати \"1080\" (або інше число)." +
                     "\n\n -scaleN - Зняти галочку \"Зменшити роздільну здатність до\"." +
                     "\n\n -crf33 - Задати CRF=33 (або інше число)." +
@@ -188,10 +213,14 @@ namespace FP_Auto_Video_Converter_2
                 checkBoxSkipIfBigger.Checked = true;
             if (isArgument("-skipN"))
                 checkBoxSkipIfBigger.Checked = false;
-            if (isArgument("-reduceFramerate30"))
+            if (getArgument("-reduceFramerate*", out int reduceFramerateValue))
+            {
                 checkBoxReduceFramerate.Checked = true;
+                textBoxReduceFramerateValue.Text = reduceFramerateValue.ToString();
+            }
             if (isArgument("-reduceFramerateN"))
                 checkBoxReduceFramerate.Checked = false;
+
             if (getArgument("-scale*", out int scale))
             {
                 checkBoxScaleDown.Checked = true;
@@ -395,8 +424,7 @@ namespace FP_Auto_Video_Converter_2
 
             try
             {
-                s = Regex.Replace(s, @"[^\p{L}\p{N}\p{P}\p{Z}]", ""); //фільтрувати недруковані символи
-                //richTextBox1.SelectionColor = Color.Black;
+                s = Regex.Replace(s, @"[^\p{L}\p{N}\p{P}\p{Z}\=]", ""); //фільтрувати недруковані символи
                 string prefix =  DateTime.Now.ToString() + ":     ";
                 int initialLength = richTextBox1.TextLength + prefix.Length;
                 if (!s.Equals("") && s.Equals(lastLog))
@@ -628,7 +656,7 @@ namespace FP_Auto_Video_Converter_2
                     }
                 }
 
-                TimeSpan roundedUptime = TimeSpan.FromSeconds(Math.Round(stopwatch.Elapsed.TotalSeconds));
+                TimeSpan roundedUptime = TimeSpan.FromSeconds(Math.Round(convertTime.Elapsed.TotalSeconds));
 
                 string percent = "";
                 if (bytesNewCompleted > 0 && bytesCompleted > 0)
@@ -744,6 +772,7 @@ namespace FP_Auto_Video_Converter_2
             trackBarCRF.Enabled = active;
             trackBarPreset.Enabled = active;
             checkBoxReduceFramerate.Enabled = active;
+            textBoxReduceFramerateValue.Enabled = active;
             checkBoxSkipIfBigger.Enabled = active;
             textBoxScaleDownSmallerSide.Enabled = active;
             checkBoxScaleDown.Enabled = active;
@@ -845,6 +874,12 @@ namespace FP_Auto_Video_Converter_2
                 int crf = trackBarCRF.Value;
                 getPresetInfo(trackBarPreset.Value, out string preset, out string description);
                 bool reduceFramerate = checkBoxReduceFramerate.Checked;
+                int.TryParse(textBoxReduceFramerateValue.Text, out int reduceFramerateValue);
+                if (reduceFramerateValue < 1 || reduceFramerateValue > 240)
+                {
+                    log("Впишіть нормальне значення кількості кадрів на секунду");
+                    return;
+                }
                 bool skipBigger = checkBoxSkipIfBigger.Checked;
                 bool downscale = checkBoxScaleDown.Checked;
                 int.TryParse(textBoxScaleDownSmallerSide.Text, out int downscaleSmallerSide);
@@ -852,13 +887,20 @@ namespace FP_Auto_Video_Converter_2
                 {
                     log("Впишіть нормальне значення роздільної здатності");
                     return;
-                }    
+                }
+
+                log($"CRF = {crf}");
+                if(reduceFramerate)
+                    log($"reduceFramerateValue = {reduceFramerateValue}");
+                log($"skipBigger = {skipBigger}");
+                if(downscale)
+                    log($"downscaleSmallerSide = {downscaleSmallerSide}");
 
                 log("Запуск стиснення...");
                 stop = false;
                 buttonStop.Enabled = true;
-                stopwatch.Start();
-                workingThread = new Thread(() => runConvertAsync(crf, preset, reduceFramerate, skipBigger, downscale, downscaleSmallerSide));
+                convertTime.Start();
+                workingThread = new Thread(() => runConvertAsync(crf, preset, reduceFramerate, reduceFramerateValue, skipBigger, downscale, downscaleSmallerSide));
                 workingThread.Start();
             }
             catch (Exception ex)
@@ -867,7 +909,7 @@ namespace FP_Auto_Video_Converter_2
             }
         }
 
-        private void runConvertAsync(int crf, string preset, bool reduceFramerate, bool skipBigger, bool downscale, double targetSmallerSide)
+        private void runConvertAsync(int crf, string preset, bool reduceFramerate, int reduceFramerateValue, bool skipBigger, bool downscale, double targetSmallerSide)
         {
             try
             {
@@ -918,7 +960,7 @@ namespace FP_Auto_Video_Converter_2
                             }
                             resolution = $"-vf \"scale={newWidth}:{newHeight}\" ";
                         }
-                        string framerate = reduceFramerate? "-r 30 " : "";
+                        string framerate = reduceFramerate? $"-r {reduceFramerateValue} " : "";
                         string arguments = $"-i \"{filePath}\" -c:v libx265 -preset {preset} -crf {crf} {framerate}{resolution}-progress pipe:1 \"{tmpfile}\"";
                         string exe = "ffmpeg.exe";
                         log(exe + " " + arguments);
@@ -1031,7 +1073,7 @@ namespace FP_Auto_Video_Converter_2
                 log("Стиснення завершено.");
                 buttonsActive(true);
                 status("Готово.");
-                stopwatch.Stop();
+                convertTime.Stop();
                 workingThread = null;
                 updateStats();
 
@@ -1370,7 +1412,7 @@ namespace FP_Auto_Video_Converter_2
 
         private void buttonAbout_Click(object sender, EventArgs e)
         {
-            string description = "FP AutoVideoConverter 2.3" +
+            string description = "FP AutoVideoConverter 2.4" +
                 "\n" +
                 "\nЦя програма дозволяє автоматизувати процес стиснення відеофайлів у кодек H.265 (HEVC), " +
                 "надаючи зручний інтерфейс для пакетного стиснення великої кількості відео." +
@@ -1502,4 +1544,10 @@ namespace FP_Auto_Video_Converter_2
 - Доповнено зразки батніка
 - Доповнено документацію
 - Покращення підказок і інтерфейсу
+
+2.4
+- В інтерфейсі додано можливість обрати довільну частоту кадрів
+- Додано відповідні аргументи для налаштування частоти стиснення
+- Додано виведення в заголовок вікна часу роботи програми
+- Оновлено документацію
  */
