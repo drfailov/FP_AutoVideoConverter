@@ -2,10 +2,10 @@
   <img src="Images/Logo-512.png" width="150"/>
 </p>
 
-# 🎬 FP Auto Video Converter 2.3
+# 🎬 FP Auto Video Converter 2.4
 
 <p align="center">
-  <img src="Images/3.png" width="700"/>
+  <img src="Images/14.png" width="700"/>
 </p>
 
 **FP Auto Video Converter** – це програма для автоматичного стиснення відеофайлів у формат **H265 (HEVC)**.  
@@ -29,13 +29,24 @@
 ## 🖥 Інтерфейс програми
 
 <p align="center">
-  <img src="Images/1.png" width="400"/>
-  <img src="Images/2.png" width="400"/>
+  <img src="Images/11.png" width="400"/>
+  <img src="Images/12.png" width="400"/>
 </p>
 
 <p align="center">
-  <img src="Images/5.png" width="400"/>
-  <img src="Images/4.png" width="400"/>
+  <img src="Images/13.png" width="400"/>
+  <img src="Images/14.png" width="400"/>
+</p>
+
+<p align="center">
+  <img src="Images/15.png" width="400"/>
+  <img src="Images/16.png" width="400"/>
+</p>
+
+
+<p align="center">
+  <img src="Images/17.png" width="400"/>
+  <img src="Images/18.png" width="400"/>
 </p>
 
 
