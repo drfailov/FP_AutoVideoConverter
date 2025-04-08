@@ -2,7 +2,7 @@
   <img src="Images/Logo-512.png" width="150"/>
 </p>
 
-# 🎬 FP Auto Video Converter 2.4
+# 🎬 FP Auto Video Converter 2.5
 
 <p align="center">
   <img src="Images/14.png" width="700"/>

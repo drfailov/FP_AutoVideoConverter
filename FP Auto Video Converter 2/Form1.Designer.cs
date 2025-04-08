@@ -49,6 +49,7 @@
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.textBoxReduceFramerateValue = new System.Windows.Forms.TextBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.textBoxResolutionToClear = new System.Windows.Forms.TextBox();
             this.textBoxBitrateToClear = new System.Windows.Forms.TextBox();
@@ -81,7 +82,6 @@
             this.panel2 = new System.Windows.Forms.Panel();
             this.labelStatus = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.textBoxReduceFramerateValue = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -289,6 +289,15 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(361, 904);
             this.panel1.TabIndex = 3;
+            // 
+            // textBoxReduceFramerateValue
+            // 
+            this.textBoxReduceFramerateValue.Location = new System.Drawing.Point(259, 224);
+            this.textBoxReduceFramerateValue.Name = "textBoxReduceFramerateValue";
+            this.textBoxReduceFramerateValue.Size = new System.Drawing.Size(53, 22);
+            this.textBoxReduceFramerateValue.TabIndex = 23;
+            this.textBoxReduceFramerateValue.Text = "30";
+            this.toolTip1.SetToolTip(this.textBoxReduceFramerateValue, "Частота кадрів (fps)");
             // 
             // groupBox1
             // 
@@ -677,15 +686,6 @@
             this.labelStatus.Text = "Перетягніть файли або папки у вікно програми, щоб додати їх до черги стиснення";
             this.labelStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // textBoxReduceFramerateValue
-            // 
-            this.textBoxReduceFramerateValue.Location = new System.Drawing.Point(259, 224);
-            this.textBoxReduceFramerateValue.Name = "textBoxReduceFramerateValue";
-            this.textBoxReduceFramerateValue.Size = new System.Drawing.Size(53, 22);
-            this.textBoxReduceFramerateValue.TabIndex = 23;
-            this.textBoxReduceFramerateValue.Text = "30";
-            this.toolTip1.SetToolTip(this.textBoxReduceFramerateValue, "Частота кадрів (fps)");
-            // 
             // Form1
             // 
             this.AllowDrop = true;
@@ -699,7 +699,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MinimumSize = new System.Drawing.Size(1298, 871);
             this.Name = "Form1";
-            this.Text = "FP AutoVideoConverter 2.4";
+            this.Text = "FP AutoVideoConverter 2.5";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.DragDrop += new System.Windows.Forms.DragEventHandler(this.Form1_DragDrop);

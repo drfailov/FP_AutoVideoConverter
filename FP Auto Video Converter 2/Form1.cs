@@ -500,25 +500,26 @@ namespace FP_Auto_Video_Converter_2
                 string mediaInfoPath = "MediaInfo.exe";
                 for (int i = 0; i < dataGridView1.Rows.Count; i++)
                 {
-                    status($"Отримання інформації про формат ({i}/{dataGridView1.Rows.Count}) ...");
-                    buttonsActive(false);
-                    if (dataGridView1.Rows[i].IsNewRow)
-                        continue;
-                    string fileCurrentFormat = dataGridView1.Rows[i].Cells["ColumnFileFormat"].Value.ToString(); // Читання значення
-                    if (!fileCurrentFormat.Equals(FORMAT_PENDING))
-                        continue;
-                    string fileName = dataGridView1.Rows[i].Cells["ColumnFileName"].Value.ToString();
-                    string filePath = dataGridView1.Rows[i].Cells["ColumnFilePath"].Value.ToString();
-                    string fileFormat = FORMAT_UNKNOWN;
-                    string fileBitrate = "0";
-                    string fileResolution = "0x0x0";
+                    string fileName = "";
                     try
                     {
+                        status($"Отримання інформації про формат ({i}/{dataGridView1.Rows.Count}) ...");
+                        buttonsActive(false);
+                        if (dataGridView1.Rows[i].IsNewRow)
+                            continue;
+                        string fileCurrentFormat = dataGridView1.Rows[i].Cells["ColumnFileFormat"].Value.ToString(); // Читання значення
+                        if (!fileCurrentFormat.Equals(FORMAT_PENDING))
+                            continue;
+                        fileName = dataGridView1.Rows[i].Cells["ColumnFileName"].Value.ToString();
+                        string filePath = dataGridView1.Rows[i].Cells["ColumnFilePath"].Value.ToString();
+                        string fileFormat = FORMAT_UNKNOWN;
+                        string fileBitrate = "0";
+                        string fileResolution = "0x0x0";
                         //get format, bitrate, resolution
                         ProcessStartInfo processStartInfo = new ProcessStartInfo
                         {
                             FileName = mediaInfoPath, // Вказуємо шлях до MediaInfo.exe
-                            Arguments = $"--Inform=\"Video;%Format%|%BitRate%|%Width%x%Height%x%Rotation%\" \"{filePath}\"", // Отримуємо формат
+                            Arguments = $"--Inform=\"Video;%Format%|%BitRate%|%Width%x%Height%x%Rotation%|\" \"{filePath}\"", // Отримуємо формат
                             RedirectStandardOutput = true, // Перехоплюємо вивід
                             UseShellExecute = false, // Не використовуємо оболонку
                             CreateNoWindow = true // Не показуємо вікно
@@ -916,26 +917,27 @@ namespace FP_Auto_Video_Converter_2
                 buttonsActive(false);
                 for (int i = 0; !stop && i < dataGridView1.Rows.Count; i++)
                 {
-                    if (dataGridView1.Rows[i].IsNewRow)
-                        continue;
-                    string fileCurrentStatus = dataGridView1.Rows[i].Cells["ColumnFileStatus"].Value.ToString(); 
-                    if (!fileCurrentStatus.Equals(STATUS_WAITING) && !fileCurrentStatus.Equals(STATUS_ERROR))
-                        continue;
-                    updateStatusInDataGrid(i, STATUS_PROCESSING, STATUS_PROCESSING_COLOR, "");
-
-
-
-                    string fileName = dataGridView1.Rows[i].Cells["ColumnFileName"].Value.ToString();
-                    string filePath = dataGridView1.Rows[i].Cells["ColumnFilePath"].Value.ToString();
-                    string fileResolution = dataGridView1.Rows[i].Cells["ColumnFileResolution"].Value.ToString();
-                    string[] resolutionParts = fileResolution.Split('x');  //1920x1080x90
-                    int width = int.Parse(resolutionParts[0]); // 1920
-                    int height = int.Parse(resolutionParts[1]); // 1080
-                    int rotation = int.Parse(resolutionParts[2]); // 0   90   180    270
-                    float smallerSide = Math.Min(width, height);
-                    log($"Стиснення файлу: {fileName}");
+                    string fileName = "";
                     try
                     {
+                        if (dataGridView1.Rows[i].IsNewRow)
+                            continue;
+                        string fileCurrentStatus = dataGridView1.Rows[i].Cells["ColumnFileStatus"].Value.ToString(); 
+                        if (!fileCurrentStatus.Equals(STATUS_WAITING) && !fileCurrentStatus.Equals(STATUS_ERROR))
+                            continue;
+                        updateStatusInDataGrid(i, STATUS_PROCESSING, STATUS_PROCESSING_COLOR, "");
+
+
+
+                        fileName = dataGridView1.Rows[i].Cells["ColumnFileName"].Value.ToString();
+                        string filePath = dataGridView1.Rows[i].Cells["ColumnFilePath"].Value.ToString();
+                        string fileResolution = dataGridView1.Rows[i].Cells["ColumnFileResolution"].Value.ToString();
+                        string[] resolutionParts = fileResolution.Split('x');  //1920x1080x90
+                        int width = int.Parse(resolutionParts[0]); // 1920
+                        int height = int.Parse(resolutionParts[1]); // 1080
+                        int rotation = int.Parse(resolutionParts[2]); // 0   90   180    270
+                        float smallerSide = Math.Min(width, height);
+                        log($"Стиснення файлу: {fileName}");
                         //Підготувати файл до стиснення
                         File.Delete(tmpfile);
 
@@ -1412,7 +1414,7 @@ namespace FP_Auto_Video_Converter_2
 
         private void buttonAbout_Click(object sender, EventArgs e)
         {
-            string description = "FP AutoVideoConverter 2.4" +
+            string description = "FP AutoVideoConverter 2.5" +
                 "\n" +
                 "\nЦя програма дозволяє автоматизувати процес стиснення відеофайлів у кодек H.265 (HEVC), " +
                 "надаючи зручний інтерфейс для пакетного стиснення великої кількості відео." +
@@ -1550,4 +1552,9 @@ namespace FP_Auto_Video_Converter_2
 - Додано відповідні аргументи для налаштування частоти стиснення
 - Додано виведення в заголовок вікна часу роботи програми
 - Оновлено документацію
+
+2.5
+- Заповнено інформацію про файл
+- Допрацьована обробка помилок - програма не вилітає якщо помилка обробки файлу
+- Допрацьовано отримання формату файлу - не виникає помилки якщо в відео файлі присутні кілька потоків відео
  */
